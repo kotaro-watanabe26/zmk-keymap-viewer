@@ -144,20 +144,24 @@
       position: relative;
       width: 100%;
       min-height: var(--stage-height, auto);
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      overflow: hidden;
     }
-    .keyboard { display: grid; gap: clamp(5px, .65vw, 9px); align-items: start; }
+    .keyboard {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      display: grid;
+      gap: clamp(5px, .65vw, 9px);
+      align-items: start;
+      transform: translateX(-50%) scale(var(--board-scale, 1));
+      transform-origin: top center;
+    }
     .keyboard.physical {
-      position: relative;
       display: block;
       min-width: var(--board-width);
       width: var(--board-width);
       height: var(--board-height);
       margin: 0;
-      transform: scale(var(--board-scale, 1));
-      transform-origin: top center;
     }
     .keyboard.physical .key {
       position: absolute;
@@ -197,8 +201,6 @@
       gap: clamp(54px, 8vw, 116px);
       min-width: 760px;
       align-items: start;
-      transform: scale(var(--board-scale, 1));
-      transform-origin: top center;
     }
     .split-half {
       min-width: 0;
@@ -648,7 +650,7 @@
       keyboard.style.setProperty("--board-scale", "1");
       const naturalWidth = keyboard.scrollWidth || keyboard.offsetWidth;
       const naturalHeight = keyboard.scrollHeight || keyboard.offsetHeight;
-      const availableWidth = Math.max(280, shell.clientWidth - 36);
+      const availableWidth = Math.max(240, stage.clientWidth);
       const scale = Math.min(1, availableWidth / naturalWidth);
       keyboard.style.setProperty("--board-scale", scale.toFixed(4));
       stage.style.setProperty("--stage-height", `${Math.ceil(naturalHeight * scale)}px`);
