@@ -1,4 +1,4 @@
-const CACHE = "zmk-keymap-viewer-v1";
+const CACHE = "zmk-keymap-viewer-v2";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./app-icon.svg"];
 
 self.addEventListener("install", event => {

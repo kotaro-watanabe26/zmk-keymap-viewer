@@ -140,6 +140,14 @@
       padding: clamp(12px, 2.6vw, 30px);
       box-shadow: var(--shadow);
     }
+    .keyboard-stage {
+      position: relative;
+      width: 100%;
+      min-height: var(--stage-height, auto);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
     .keyboard { display: grid; gap: clamp(5px, .65vw, 9px); align-items: start; }
     .keyboard.physical {
       position: relative;
@@ -147,7 +155,9 @@
       min-width: var(--board-width);
       width: var(--board-width);
       height: var(--board-height);
-      margin: 0 auto;
+      margin: 0;
+      transform: scale(var(--board-scale, 1));
+      transform-origin: top center;
     }
     .keyboard.physical .key {
       position: absolute;
@@ -187,6 +197,8 @@
       gap: clamp(54px, 8vw, 116px);
       min-width: 760px;
       align-items: start;
+      transform: scale(var(--board-scale, 1));
+      transform-origin: top center;
     }
     .split-half {
       min-width: 0;
@@ -275,9 +287,7 @@
       main { padding: 16px 12px 24px; }
       .toolbar { align-items: flex-start; }
       .legend { display: none; }
-      .keyboard-shell { overflow-x: auto; padding: 18px; }
-      .keyboard { min-width: 700px; }
-      .keyboard.physical { min-width: var(--board-width); }
+      .keyboard-shell { overflow: hidden; padding: 18px; }
       .keyboard.split { min-width: 760px; gap: 54px; }
       .search { width: 145px; }
     }
@@ -330,7 +340,7 @@
             <input class="search" id="search" type="search" placeholder="キーを検索" aria-label="キーを検索">
           </div>
         </div>
-        <section class="keyboard-shell"><div class="keyboard" id="keyboard"></div></section>
+        <section class="keyboard-shell" id="keyboardShell"><div class="keyboard-stage" id="keyboardStage"><div class="keyboard" id="keyboard"></div></div></section>
         <div class="detail" id="detail"><div class="detail-key">Hover</div><span>キーにカーソルを合わせると、ZMK behavior を確認できます。</span></div>
       </main>
     </div>
@@ -540,6 +550,7 @@
         keyboard.appendChild(key);
       });
       renderCombos(keyboard, positions, unit);
+      requestAnimationFrame(fitKeyboard);
     }
     function renderCombos(keyboard, positions, unit) {
       const visible = state.combos.filter(combo => !combo.layers || combo.layers.includes(state.active));
@@ -627,6 +638,20 @@
         appendSplitRow(right, row.right, "right", rightColumns, row.start + row.left.length, thumbRow);
       });
       keyboard.append(left, right);
+      requestAnimationFrame(fitKeyboard);
+    }
+    function fitKeyboard() {
+      const shell = document.getElementById("keyboardShell");
+      const stage = document.getElementById("keyboardStage");
+      const keyboard = document.getElementById("keyboard");
+      if (!shell || !stage || !keyboard) return;
+      keyboard.style.setProperty("--board-scale", "1");
+      const naturalWidth = keyboard.scrollWidth || keyboard.offsetWidth;
+      const naturalHeight = keyboard.scrollHeight || keyboard.offsetHeight;
+      const availableWidth = Math.max(280, shell.clientWidth - 36);
+      const scale = Math.min(1, availableWidth / naturalWidth);
+      keyboard.style.setProperty("--board-scale", scale.toFixed(4));
+      stage.style.setProperty("--stage-height", `${Math.ceil(naturalHeight * scale)}px`);
     }
     function render() {
       const layersEl = document.getElementById("layers");
@@ -764,6 +789,8 @@
     };
     load(sample);
     discoverRepos();
+    window.addEventListener("resize", () => requestAnimationFrame(fitKeyboard));
+    window.addEventListener("orientationchange", () => setTimeout(fitKeyboard, 120));
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
       navigator.serviceWorker.register("./sw.js").catch(() => {});
     }
